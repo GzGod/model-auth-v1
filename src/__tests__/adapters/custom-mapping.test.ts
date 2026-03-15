@@ -5,7 +5,7 @@ describe("custom mapping validation", () => {
   it("accepts custom adapter with response mapping", () => {
     const parsed = endpointConfigSchema.parse({
       providerType: "custom",
-      baseUrl: "https://example.com",
+      baseUrl: "https://adapter.gateway.test",
       modelClaim: "gpt-5",
       adapterMapping: { responsePath: "choices.0.message.content" }
     });

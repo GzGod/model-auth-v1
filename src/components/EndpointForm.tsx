@@ -9,9 +9,9 @@ type Provider = "openai_compatible" | "anthropic" | "gemini" | "azure_openai" | 
 export default function EndpointForm() {
   const router = useRouter();
   const [providerType, setProviderType] = React.useState<Provider>("openai_compatible");
-  const [baseUrl, setBaseUrl] = React.useState("https://example.com/v1");
+  const [baseUrl, setBaseUrl] = React.useState("");
   const [apiKey, setApiKey] = React.useState("");
-  const [modelClaim, setModelClaim] = React.useState("gpt-5");
+  const [modelClaim, setModelClaim] = React.useState("");
   const [responsePath, setResponsePath] = React.useState("choices.0.message.content");
   const [mode, setMode] = React.useState<Mode>("quick");
   const [error, setError] = React.useState<string>("");

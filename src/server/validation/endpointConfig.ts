@@ -17,6 +17,18 @@ export const endpointConfigSchema = z
     adapterMapping: customAdapterSchema.optional()
   })
   .superRefine((value, ctx) => {
+    try {
+      if (/(^|\.)example\.com$/i.test(new URL(value.baseUrl).hostname)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "baseUrl 不能使用示例地址，请填写真实接口地址",
+          path: ["baseUrl"]
+        });
+      }
+    } catch {
+      // baseUrl format issues are handled by z.string().url()
+    }
+
     if (value.providerType === "custom" && !value.adapterMapping) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

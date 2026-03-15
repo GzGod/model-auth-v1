@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect, vi } from "vitest";
 import { POST as createRun } from "@/app/api/runs/route";
 import { GET as getRun } from "@/app/api/runs/[runId]/route";
 
@@ -14,7 +14,7 @@ describe("runs api", () => {
     expect(response.status).toBe(400);
   });
 
-  it("creates run and returns verdict summary", async () => {
+  it("rejects placeholder base url", async () => {
     const request = new Request("http://localhost/api/runs", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -22,6 +22,39 @@ describe("runs api", () => {
         endpointConfig: {
           providerType: "openai_compatible",
           baseUrl: "https://example.com/v1",
+          modelClaim: "gpt-5"
+        },
+        runConfig: { mode: "quick" }
+      })
+    });
+
+    const response = await createRun(request);
+    expect(response.status).toBe(400);
+    const data = (await response.json()) as { error: string };
+    expect(data.error).toContain("baseUrl");
+  });
+
+  it("creates run and returns verdict summary", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: "PONG" } }],
+          usage: { prompt_tokens: 5, completion_tokens: 2, total_tokens: 7 }
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      )
+    );
+
+    const request = new Request("http://localhost/api/runs", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        endpointConfig: {
+          providerType: "openai_compatible",
+          baseUrl: "https://api.real-provider.test/v1",
           modelClaim: "gpt-5"
         },
         runConfig: { mode: "quick" }
@@ -45,5 +78,6 @@ describe("runs api", () => {
     expect(getResponse.status).toBe(200);
     expect(run.status).toBe("completed");
     expect(run.stageResults).toHaveLength(4);
+    fetchMock.mockRestore();
   });
 });
