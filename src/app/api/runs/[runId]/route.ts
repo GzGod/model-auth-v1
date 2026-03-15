@@ -4,7 +4,7 @@ export async function GET(_request: Request, context: { params: Promise<{ runId:
   const { runId } = await context.params;
   const run = getRunById(runId);
   if (!run) {
-    return Response.json({ error: "run not found" }, { status: 404 });
+    return Response.json({ error: "未找到检测记录" }, { status: 404 });
   }
   return Response.json(run, { status: 200 });
 }

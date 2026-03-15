@@ -41,13 +41,13 @@ export default function EndpointForm() {
 
       if (!response.ok) {
         const body = (await response.json()) as { error?: string };
-        throw new Error(body.error ?? "failed to create run");
+        throw new Error(body.error ?? "创建检测任务失败");
       }
 
       const body = (await response.json()) as { runId: string };
       router.push(`/runs/${body.runId}`);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "failed to create run");
+      setError(caughtError instanceof Error ? caughtError.message : "创建检测任务失败");
     } finally {
       setLoading(false);
     }
@@ -59,22 +59,22 @@ export default function EndpointForm() {
       className="form-card"
     >
       <label className="field-group">
-        <span>Provider</span>
+        <span>接口类型</span>
         <select
           className="field-control"
           value={providerType}
           onChange={(event) => setProviderType(event.target.value as Provider)}
         >
-          <option value="openai_compatible">OpenAI Compatible</option>
+          <option value="openai_compatible">OpenAI 兼容</option>
           <option value="anthropic">Anthropic</option>
           <option value="gemini">Gemini</option>
           <option value="azure_openai">Azure OpenAI</option>
-          <option value="custom">Custom</option>
+          <option value="custom">自定义适配器</option>
         </select>
       </label>
 
       <label className="field-group">
-        <span>Base URL</span>
+        <span>接口 Base URL</span>
         <input
           className="field-control"
           value={baseUrl}
@@ -85,7 +85,7 @@ export default function EndpointForm() {
       </label>
 
       <label className="field-group">
-        <span>API Key</span>
+        <span>API Key（可选）</span>
         <input
           className="field-control"
           type="password"
@@ -96,7 +96,7 @@ export default function EndpointForm() {
       </label>
 
       <label className="field-group">
-        <span>Claimed Model</span>
+        <span>声称模型名</span>
         <input
           className="field-control"
           value={modelClaim}
@@ -108,7 +108,7 @@ export default function EndpointForm() {
 
       {providerType === "custom" ? (
         <label className="field-group">
-          <span>Custom Response Path</span>
+          <span>自定义响应路径</span>
           <input
             className="field-control"
             value={responsePath}
@@ -120,15 +120,15 @@ export default function EndpointForm() {
       ) : null}
 
       <label className="field-group">
-        <span>Mode</span>
+        <span>检测模式</span>
         <select className="field-control" value={mode} onChange={(event) => setMode(event.target.value as Mode)}>
-          <option value="quick">Quick</option>
-          <option value="deep">Deep</option>
+          <option value="quick">快速（低成本）</option>
+          <option value="deep">深度（高置信）</option>
         </select>
       </label>
 
       <button className="button-primary" type="submit" disabled={loading}>
-        {loading ? "Running..." : "Start Audit"}
+        {loading ? "检测中..." : "开始检测"}
       </button>
 
       {error ? (

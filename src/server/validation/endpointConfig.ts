@@ -20,7 +20,7 @@ export const endpointConfigSchema = z
     if (value.providerType === "custom" && !value.adapterMapping) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "adapterMapping is required for custom provider",
+        message: "自定义适配器必须提供 adapterMapping",
         path: ["adapterMapping"]
       });
     }

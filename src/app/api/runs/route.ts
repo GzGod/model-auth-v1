@@ -21,7 +21,7 @@ export async function POST(request: Request): Promise<Response> {
     const result = await createAndRun(parsed);
     return Response.json(result, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "invalid request";
+    const message = error instanceof z.ZodError ? "请求参数不合法" : error instanceof Error ? error.message : "请求参数不合法";
     return Response.json({ error: message }, { status: 400 });
   }
 }

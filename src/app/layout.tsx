@@ -1,27 +1,27 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, IBM_Plex_Sans } from "next/font/google";
+import { Noto_Sans_SC, Noto_Serif_SC } from "next/font/google";
 import "../styles/globals.css";
 
-const displayFont = Bricolage_Grotesque({
+const displayFont = Noto_Serif_SC({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["600", "700", "800"]
+  weight: ["500", "600", "700"]
 });
 
-const bodyFont = IBM_Plex_Sans({
+const bodyFont = Noto_Sans_SC({
   subsets: ["latin"],
   variable: "--font-body",
-  weight: ["400", "500", "600", "700"]
+  weight: ["400", "500", "700"]
 });
 
 export const metadata: Metadata = {
-  title: "Model Auth V1",
-  description: "Model fidelity auditing for API endpoints"
+  title: "模型鉴真 V1",
+  description: "面向 API 端点的模型真实性检测"
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <body className={`${displayFont.variable} ${bodyFont.variable}`}>{children}</body>
     </html>
   );
