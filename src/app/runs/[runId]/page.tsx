@@ -1,4 +1,4 @@
-import EvidenceList from "@/components/EvidenceList";
+﻿import EvidenceList from "@/components/EvidenceList";
 import Scoreboard from "@/components/Scoreboard";
 import { getRunById } from "@/server/db";
 
@@ -8,9 +8,11 @@ export default async function RunReportPage({ params }: { params: Promise<{ runI
 
   if (!run) {
     return (
-      <main style={{ padding: 24 }}>
-        <h1>Run Not Found</h1>
-        <p>Run ID: {runId}</p>
+      <main className="page-shell">
+        <section className="panel">
+          <h1 className="section-title">Run Not Found</h1>
+          <p className="muted-text">Run ID: {runId}</p>
+        </section>
       </main>
     );
   }
@@ -19,20 +21,12 @@ export default async function RunReportPage({ params }: { params: Promise<{ runI
   const allFlags = run.stageResults.flatMap((stage) => stage.flags);
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        padding: "32px 20px",
-        maxWidth: 920,
-        margin: "0 auto",
-        display: "grid",
-        gap: 16
-      }}
-    >
-      <header>
-        <h1 style={{ marginBottom: 4 }}>Audit Report</h1>
-        <p style={{ margin: 0, color: "#52525b" }}>
-          Run <code>{run.id}</code> • Model <code>{run.modelClaim}</code> • Status <code>{run.status}</code>
+    <main className="page-shell">
+      <header className="hero">
+        <p className="eyebrow">Audit Report</p>
+        <h1 className="hero-title">Run {run.id.slice(0, 8)}</h1>
+        <p className="hero-copy">
+          Model <code>{run.modelClaim}</code> · Provider <code>{run.providerType}</code> · Status <code>{run.status}</code>
         </p>
       </header>
 

@@ -10,7 +10,9 @@ export default function EndpointForm() {
   const router = useRouter();
   const [providerType, setProviderType] = React.useState<Provider>("openai_compatible");
   const [baseUrl, setBaseUrl] = React.useState("https://example.com/v1");
+  const [apiKey, setApiKey] = React.useState("");
   const [modelClaim, setModelClaim] = React.useState("gpt-5");
+  const [responsePath, setResponsePath] = React.useState("choices.0.message.content");
   const [mode, setMode] = React.useState<Mode>("quick");
   const [error, setError] = React.useState<string>("");
   const [loading, setLoading] = React.useState(false);
@@ -27,7 +29,9 @@ export default function EndpointForm() {
           endpointConfig: {
             providerType,
             baseUrl,
-            modelClaim
+            apiKey: apiKey.trim() || undefined,
+            modelClaim,
+            ...(providerType === "custom" ? { adapterMapping: { responsePath } } : {})
           },
           runConfig: {
             mode
@@ -52,18 +56,15 @@ export default function EndpointForm() {
   return (
     <form
       onSubmit={onSubmit}
-      style={{
-        display: "grid",
-        gap: 12,
-        border: "1px solid #e4e4e7",
-        borderRadius: 12,
-        padding: 20,
-        background: "#fafafa"
-      }}
+      className="form-card"
     >
-      <label>
-        Provider
-        <select value={providerType} onChange={(event) => setProviderType(event.target.value as Provider)}>
+      <label className="field-group">
+        <span>Provider</span>
+        <select
+          className="field-control"
+          value={providerType}
+          onChange={(event) => setProviderType(event.target.value as Provider)}
+        >
           <option value="openai_compatible">OpenAI Compatible</option>
           <option value="anthropic">Anthropic</option>
           <option value="gemini">Gemini</option>
@@ -72,30 +73,66 @@ export default function EndpointForm() {
         </select>
       </label>
 
-      <label>
-        Base URL
-        <input value={baseUrl} onChange={(event) => setBaseUrl(event.target.value)} required />
+      <label className="field-group">
+        <span>Base URL</span>
+        <input
+          className="field-control"
+          value={baseUrl}
+          onChange={(event) => setBaseUrl(event.target.value)}
+          required
+          placeholder="https://api.example.com/v1"
+        />
       </label>
 
-      <label>
-        Claimed model
-        <input value={modelClaim} onChange={(event) => setModelClaim(event.target.value)} required />
+      <label className="field-group">
+        <span>API Key</span>
+        <input
+          className="field-control"
+          type="password"
+          value={apiKey}
+          onChange={(event) => setApiKey(event.target.value)}
+          placeholder="sk-..."
+        />
       </label>
 
-      <label>
-        Mode
-        <select value={mode} onChange={(event) => setMode(event.target.value as Mode)}>
+      <label className="field-group">
+        <span>Claimed Model</span>
+        <input
+          className="field-control"
+          value={modelClaim}
+          onChange={(event) => setModelClaim(event.target.value)}
+          required
+          placeholder="gpt-5"
+        />
+      </label>
+
+      {providerType === "custom" ? (
+        <label className="field-group">
+          <span>Custom Response Path</span>
+          <input
+            className="field-control"
+            value={responsePath}
+            onChange={(event) => setResponsePath(event.target.value)}
+            required
+            placeholder="choices.0.message.content"
+          />
+        </label>
+      ) : null}
+
+      <label className="field-group">
+        <span>Mode</span>
+        <select className="field-control" value={mode} onChange={(event) => setMode(event.target.value as Mode)}>
           <option value="quick">Quick</option>
           <option value="deep">Deep</option>
         </select>
       </label>
 
-      <button type="submit" disabled={loading}>
+      <button className="button-primary" type="submit" disabled={loading}>
         {loading ? "Running..." : "Start Audit"}
       </button>
 
       {error ? (
-        <p role="alert" style={{ margin: 0, color: "#991b1b" }}>
+        <p role="alert" className="field-error">
           {error}
         </p>
       ) : null}

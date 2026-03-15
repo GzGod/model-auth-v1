@@ -7,19 +7,15 @@ interface ScoreboardProps {
 
 export default function Scoreboard({ finalScore, riskLevel }: ScoreboardProps) {
   const label = riskLevel.replace("_", " ");
+  const scoreClass = finalScore >= 80 ? "score-good" : finalScore >= 60 ? "score-mid" : "score-bad";
   return (
-    <section
-      style={{
-        border: "1px solid #d4d4d8",
-        borderRadius: 10,
-        padding: 16,
-        display: "grid",
-        gap: 8
-      }}
-    >
-      <h2 style={{ margin: 0, fontSize: 18 }}>Verdict</h2>
-      <p style={{ margin: 0, fontSize: 30, fontWeight: 700 }}>{finalScore}</p>
-      <p style={{ margin: 0, color: "#3f3f46", textTransform: "capitalize" }}>{label}</p>
+    <section className="score-card">
+      <h2 className="section-title">Verdict</h2>
+      <p className={`score-value ${scoreClass}`}>{finalScore}</p>
+      <p className="badge">{label}</p>
+      <div className="score-track" aria-hidden>
+        <div className={`score-fill ${scoreClass}`} style={{ width: `${Math.max(0, Math.min(100, finalScore))}%` }} />
+      </div>
     </section>
   );
 }

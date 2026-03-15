@@ -11,7 +11,15 @@ export interface StartRunInput {
   runConfig: RunConfig;
 }
 
-export async function createAndRun(input: StartRunInput): Promise<{ runId: string; status: string }> {
+export interface RunExecutionSummary {
+  runId: string;
+  status: string;
+  riskLevel?: string;
+  finalScore?: number;
+  confidence?: number;
+}
+
+export async function createAndRun(input: StartRunInput): Promise<RunExecutionSummary> {
   const run = createRun({
     providerType: input.endpointConfig.providerType,
     baseUrl: input.endpointConfig.baseUrl,
@@ -22,7 +30,13 @@ export async function createAndRun(input: StartRunInput): Promise<{ runId: strin
   await executeRun(run.id, input);
 
   const latest = getRunById(run.id);
-  return { runId: run.id, status: latest?.status ?? "unknown" };
+  return {
+    runId: run.id,
+    status: latest?.status ?? "unknown",
+    riskLevel: latest?.riskLevel,
+    finalScore: latest?.finalScore,
+    confidence: latest?.confidence
+  };
 }
 
 export async function executeRun(runId: string, input: StartRunInput): Promise<void> {
