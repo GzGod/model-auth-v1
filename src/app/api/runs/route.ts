@@ -23,10 +23,10 @@ export async function POST(request: Request): Promise<Response> {
   } catch (error) {
     const message =
       error instanceof z.ZodError
-        ? (error.issues[0]?.message ?? "请求参数不合法")
+        ? (error.issues[0]?.message ?? "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5")
         : error instanceof Error
           ? error.message
-          : "请求参数不合法";
+          : "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5";
     return Response.json({ error: message }, { status: 400 });
   }
 }

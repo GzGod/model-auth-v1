@@ -35,8 +35,8 @@ describe("runs api", () => {
   });
 
   it("creates run and returns verdict summary", async () => {
-    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+      return new Response(
         JSON.stringify({
           choices: [{ message: { content: "PONG" } }],
           usage: { prompt_tokens: 5, completion_tokens: 2, total_tokens: 7 }
@@ -45,8 +45,8 @@ describe("runs api", () => {
           status: 200,
           headers: { "content-type": "application/json" }
         }
-      )
-    );
+      );
+    });
 
     const request = new Request("http://localhost/api/runs", {
       method: "POST",

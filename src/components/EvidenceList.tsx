@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 
 interface EvidenceListProps {
   title: string;
@@ -10,7 +10,7 @@ export default function EvidenceList({ title, items }: EvidenceListProps) {
     <section className="panel">
       <h3 className="section-title">{title}</h3>
       {items.length === 0 ? (
-        <p className="muted-text">暂无证据记录。</p>
+        <p className="muted-text">{"\u6682\u65e0\u8bc1\u636e\u8bb0\u5f55\u3002"}</p>
       ) : (
         <ul className="evidence-list">
           {items.map((item) => (
