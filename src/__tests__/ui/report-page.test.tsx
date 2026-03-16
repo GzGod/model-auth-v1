@@ -5,6 +5,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import Scoreboard from "@/components/Scoreboard";
 import EndpointForm from "@/components/EndpointForm";
+import EvidenceList from "@/components/EvidenceList";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -23,5 +24,11 @@ describe("ui", () => {
     render(<EndpointForm />);
     expect(screen.getByLabelText(/API Key/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /开始检测/i })).toBeInTheDocument();
+  });
+
+  it("renders human explanations for report items", () => {
+    render(<EvidenceList title="风险标记" items={["b:format_json:drop"]} variant="flag" />);
+    expect(screen.getByText("b:format_json:drop")).toBeInTheDocument();
+    expect(screen.getByText(/JSON/)).toBeInTheDocument();
   });
 });

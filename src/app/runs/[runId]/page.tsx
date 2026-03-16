@@ -33,8 +33,8 @@ export default async function RunReportPage({ params }: { params: Promise<{ runI
       </header>
 
       <Scoreboard finalScore={run.finalScore ?? 0} riskLevel={run.riskLevel ?? "inconclusive"} />
-      <EvidenceList title={"\u98ce\u9669\u6807\u8bb0"} items={allFlags} />
-      <EvidenceList title={"\u8bc1\u636e\u660e\u7ec6"} items={allEvidence} />
+      <EvidenceList title={"\u98ce\u9669\u6807\u8bb0"} items={allFlags} variant="flag" />
+      <EvidenceList title={"\u8bc1\u636e\u660e\u7ec6"} items={allEvidence} variant="evidence" />
     </main>
   );
 }

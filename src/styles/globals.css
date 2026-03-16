@@ -242,7 +242,20 @@ code {
   margin: 0.7rem 0 0 1.1rem;
   color: var(--ink-2);
   display: grid;
-  gap: 0.32rem;
+  gap: 0.6rem;
+}
+
+.evidence-raw {
+  margin: 0;
+  font-family: "IBM Plex Mono", "Consolas", monospace;
+  word-break: break-word;
+}
+
+.evidence-explain {
+  margin: 0.2rem 0 0 0;
+  color: var(--ink-3);
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 @media (max-width: 680px) {
