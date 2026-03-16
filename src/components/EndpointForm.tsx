@@ -6,6 +6,19 @@ import { useRouter } from "next/navigation";
 type Mode = "quick" | "deep";
 type Provider = "openai_compatible" | "custom";
 
+interface ApiErrorDetail {
+  code: string;
+  stage: string;
+  reason: string;
+  suggestions: string[];
+  debug?: {
+    timestamp?: string;
+    rawMessage?: string;
+    upstreamStatus?: number;
+    endpoint?: string;
+  };
+}
+
 export default function EndpointForm() {
   const router = useRouter();
   const [providerType, setProviderType] = React.useState<Provider>("openai_compatible");
@@ -15,12 +28,14 @@ export default function EndpointForm() {
   const [responsePath, setResponsePath] = React.useState("choices.0.message.content");
   const [mode, setMode] = React.useState<Mode>("quick");
   const [error, setError] = React.useState<string>("");
+  const [errorDetail, setErrorDetail] = React.useState<ApiErrorDetail | null>(null);
   const [loading, setLoading] = React.useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError("");
+    setErrorDetail(null);
 
     try {
       const response = await fetch("/api/runs", {
@@ -39,14 +54,30 @@ export default function EndpointForm() {
       });
 
       if (!response.ok) {
-        const body = (await response.json()) as { error?: string };
-        throw new Error(body.error ?? "\u521b\u5efa\u68c0\u6d4b\u4efb\u52a1\u5931\u8d25");
+        const body = (await response.json()) as { error?: string; errorDetail?: ApiErrorDetail };
+        setError(body.error ?? "\u521b\u5efa\u68c0\u6d4b\u4efb\u52a1\u5931\u8d25");
+        setErrorDetail(body.errorDetail ?? null);
+        setLoading(false);
+        return;
       }
 
       const body = (await response.json()) as { runId: string };
       router.push(`/runs/${body.runId}`);
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "\u521b\u5efa\u68c0\u6d4b\u4efb\u52a1\u5931\u8d25");
+      setErrorDetail({
+        code: "CLIENT_REQUEST_FAILED",
+        stage: "runtime",
+        reason: "\u63d0\u4ea4\u8bf7\u6c42\u5931\u8d25\uff0c\u53ef\u80fd\u662f\u7f51\u7edc\u4e2d\u65ad\u6216\u670d\u52a1\u6682\u65f6\u4e0d\u53ef\u7528\u3002",
+        suggestions: [
+          "\u68c0\u67e5\u7f51\u7edc\u540e\u5237\u65b0\u9875\u9762\u91cd\u8bd5\u3002",
+          "\u82e5\u6301\u7eed\u5931\u8d25\uff0c\u7a0d\u540e\u518d\u8bd5\u6216\u8054\u7cfb\u7ba1\u7406\u5458\u3002"
+        ],
+        debug: {
+          timestamp: new Date().toISOString(),
+          rawMessage: caughtError instanceof Error ? caughtError.message : "unknown client error"
+        }
+      });
     } finally {
       setLoading(false);
     }
@@ -124,9 +155,23 @@ export default function EndpointForm() {
       <p className="muted-text">{"\u8bf4\u660e\uff1a\u751f\u4ea7\u7248\u4ec5\u5c55\u793a\u5df2\u5b9e\u73b0\u4e14\u53ef\u771f\u5b9e\u8fd0\u884c\u7684\u9002\u914d\u5668\u3002"}</p>
 
       {error ? (
-        <p role="alert" className="field-error">
-          {error}
-        </p>
+        <section role="alert" className="field-error-block">
+          <p className="field-error">{error}</p>
+          {errorDetail ? (
+            <>
+              <p className="error-reason">{errorDetail.reason}</p>
+              <ul className="error-suggestions">
+                {errorDetail.suggestions.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <details className="error-debug">
+                <summary>{"\u6280\u672f\u8c03\u8bd5\u4fe1\u606f"}</summary>
+                <pre>{JSON.stringify(errorDetail, null, 2)}</pre>
+              </details>
+            </>
+          ) : null}
+        </section>
       ) : null}
     </form>
   );

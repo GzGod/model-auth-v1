@@ -28,7 +28,11 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     });
 
     if (!response.ok) {
-      throw new Error(`upstream error: ${response.status}`);
+      const rawBody = await response.text();
+      const bodySnippet = rawBody.replace(/\s+/g, " ").trim().slice(0, 240);
+      throw new Error(
+        `upstream error: ${response.status}; endpoint=/chat/completions${bodySnippet ? `; body=${bodySnippet}` : ""}`
+      );
     }
 
     const raw = (await response.json()) as {

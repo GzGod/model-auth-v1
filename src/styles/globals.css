@@ -185,6 +185,53 @@ code {
   font-size: 0.9rem;
 }
 
+.field-error-block {
+  margin: 0;
+  border: 1px solid color-mix(in oklab, var(--danger) 28%, white);
+  border-radius: 0.7rem;
+  background: color-mix(in oklab, var(--danger) 6%, white);
+  padding: 0.7rem 0.8rem;
+  display: grid;
+  gap: 0.46rem;
+}
+
+.error-reason {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+
+.error-suggestions {
+  margin: 0 0 0 1rem;
+  color: var(--ink-2);
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.88rem;
+}
+
+.error-debug {
+  margin: 0.1rem 0 0 0;
+  color: var(--ink-3);
+}
+
+.error-debug summary {
+  cursor: pointer;
+  font-size: 0.84rem;
+  user-select: none;
+}
+
+.error-debug pre {
+  margin: 0.45rem 0 0 0;
+  padding: 0.55rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.78);
+  overflow-x: auto;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+
 .score-card {
   padding: 1rem;
   display: grid;

@@ -34,6 +34,43 @@ describe("runs api", () => {
     expect(data.error).toContain("baseUrl");
   });
 
+  it("returns detailed upstream reason for 503", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("service unavailable", {
+        status: 503,
+        headers: { "content-type": "text/plain" }
+      })
+    );
+
+    const request = new Request("http://localhost/api/runs", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        endpointConfig: {
+          providerType: "openai_compatible",
+          baseUrl: "https://api.real-provider.test/v1",
+          modelClaim: "gpt-5",
+          apiKey: "sk-test"
+        },
+        runConfig: { mode: "quick" }
+      })
+    });
+
+    const response = await createRun(request);
+    const data = (await response.json()) as {
+      error: string;
+      errorDetail: { code: string; reason: string; suggestions: string[]; debug: { upstreamStatus?: number } };
+    };
+
+    expect(response.status).toBe(502);
+    expect(data.error).toContain("503");
+    expect(data.errorDetail.code).toBe("UPSTREAM_HTTP_503");
+    expect(data.errorDetail.reason).toContain("上游服务暂时不可用");
+    expect(data.errorDetail.suggestions.length).toBeGreaterThan(0);
+    expect(data.errorDetail.debug.upstreamStatus).toBe(503);
+    fetchMock.mockRestore();
+  });
+
   it("creates run and returns verdict summary", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
       return new Response(

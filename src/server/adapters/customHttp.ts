@@ -49,7 +49,11 @@ export class CustomHttpAdapter implements ProviderAdapter {
     });
 
     if (!response.ok) {
-      throw new Error(`upstream error: ${response.status}`);
+      const rawBody = await response.text();
+      const bodySnippet = rawBody.replace(/\s+/g, " ").trim().slice(0, 240);
+      throw new Error(
+        `upstream error: ${response.status}; endpoint=${this.baseUrl}${bodySnippet ? `; body=${bodySnippet}` : ""}`
+      );
     }
 
     const raw = (await response.json()) as unknown;

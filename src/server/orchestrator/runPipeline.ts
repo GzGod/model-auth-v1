@@ -57,6 +57,19 @@ function responseSnippet(text: string, limit = 80): string {
   return `${normalized.slice(0, limit)}...`;
 }
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "unknown error";
+}
+
+async function withStage<T>(stage: string, runner: () => Promise<T>): Promise<T> {
+  try {
+    return await runner();
+  } catch (error) {
+    const message = getErrorMessage(error);
+    throw new Error(`[${stage}] ${message}`);
+  }
+}
+
 async function invokeTimed(adapter: ProviderAdapter, input: AdapterRequest): Promise<TimedInvocation> {
   const startedAt = Date.now();
   const response = await adapter.invoke(input);
@@ -287,33 +300,41 @@ export async function executeRun(runId: string, input: StartRunInput): Promise<v
   updateRun(runId, { status: "running" });
 
   try {
-    const adapter = createAdapter({
-      providerType: input.endpointConfig.providerType,
-      baseUrl: input.endpointConfig.baseUrl,
-      apiKey: input.endpointConfig.apiKey,
-      modelClaim: input.endpointConfig.modelClaim,
-      adapterMapping: input.endpointConfig.adapterMapping
-    });
+    const adapter = await withStage("adapter", async () =>
+      createAdapter({
+        providerType: input.endpointConfig.providerType,
+        baseUrl: input.endpointConfig.baseUrl,
+        apiKey: input.endpointConfig.apiKey,
+        modelClaim: input.endpointConfig.modelClaim,
+        adapterMapping: input.endpointConfig.adapterMapping
+      })
+    );
 
     const allLatencies: number[] = [];
 
-    const stageA = await runProtocolStage(adapter, input.endpointConfig, allLatencies);
+    const stageA = await withStage("protocol", async () => runProtocolStage(adapter, input.endpointConfig, allLatencies));
     appendStageResult(runId, stageA.stage, stageA.score, stageA.flags, stageA.evidence);
 
-    const stageB = await runCapabilityStage(adapter, input.endpointConfig, input.runConfig, allLatencies);
+    const stageB = await withStage("capability", async () =>
+      runCapabilityStage(adapter, input.endpointConfig, input.runConfig, allLatencies)
+    );
     appendStageResult(runId, stageB.stage, stageB.score, stageB.flags, stageB.evidence);
 
-    const stageC = await runConsistencyStage(adapter, input.endpointConfig, input.runConfig, allLatencies);
+    const stageC = await withStage("consistency", async () =>
+      runConsistencyStage(adapter, input.endpointConfig, input.runConfig, allLatencies)
+    );
     appendStageResult(runId, stageC.stage, stageC.score, stageC.flags, stageC.evidence);
 
     const latencyAverage = mean(allLatencies);
     const latencyCv = latencyAverage > 0 ? stdDev(allLatencies) / latencyAverage : 0;
     const accuracyStdDev = stdDev(stageB.observedScores);
 
-    const stageD = await runStageDVolatility({
-      accuracyStdDev,
-      latencyCv
-    });
+    const stageD = await withStage("volatility", async () =>
+      runStageDVolatility({
+        accuracyStdDev,
+        latencyCv
+      })
+    );
     stageD.evidence.push(`latency_samples=${allLatencies.length}`);
     appendStageResult(runId, stageD.stage, stageD.score, stageD.flags, stageD.evidence);
 
@@ -340,7 +361,7 @@ export async function executeRun(runId: string, input: StartRunInput): Promise<v
     });
   } catch (error) {
     updateRun(runId, { status: "failed" });
-    const message = error instanceof Error ? error.message : "\u4e0a\u6e38\u63a5\u53e3\u9884\u68c0\u5931\u8d25";
-    throw new Error(`\u68c0\u6d4b\u5931\u8d25\uff1a${message}`);
+    const message = getErrorMessage(error);
+    throw new Error(message.startsWith("[") ? message : `[runtime] ${message}`);
   }
 }
