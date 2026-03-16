@@ -71,6 +71,41 @@ describe("runs api", () => {
     fetchMock.mockRestore();
   });
 
+  it("returns readable reason when upstream returns html", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("<html><title>Gateway</title></html>", {
+        status: 200,
+        headers: { "content-type": "text/html" }
+      })
+    );
+
+    const request = new Request("http://localhost/api/runs", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        endpointConfig: {
+          providerType: "openai_compatible",
+          baseUrl: "https://api.real-provider.test/v1",
+          modelClaim: "gpt-5",
+          apiKey: "sk-test"
+        },
+        runConfig: { mode: "quick" }
+      })
+    });
+
+    const response = await createRun(request);
+    const data = (await response.json()) as {
+      error: string;
+      errorDetail: { code: string; reason: string; suggestions: string[] };
+    };
+
+    expect(response.status).toBe(502);
+    expect(data.errorDetail.code).toBe("UPSTREAM_NON_JSON_RESPONSE");
+    expect(data.errorDetail.reason).toContain("不是 JSON");
+    expect(data.errorDetail.suggestions.join(" ")).toContain("/v1");
+    fetchMock.mockRestore();
+  });
+
   it("creates run and returns verdict summary", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
       return new Response(

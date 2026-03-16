@@ -56,7 +56,15 @@ export class CustomHttpAdapter implements ProviderAdapter {
       );
     }
 
-    const raw = (await response.json()) as unknown;
+    const rawText = await response.text();
+    let raw: unknown;
+    try {
+      raw = JSON.parse(rawText) as unknown;
+    } catch {
+      const bodySnippet = rawText.replace(/\s+/g, " ").trim().slice(0, 240);
+      throw new Error(`upstream non-json response; endpoint=${this.baseUrl}${bodySnippet ? `; body=${bodySnippet}` : ""}`);
+    }
+
     const content = readMappedContent(raw, { responsePath: this.responsePath });
     if (!content.trim()) {
       throw new Error("custom responsePath did not resolve to text content");

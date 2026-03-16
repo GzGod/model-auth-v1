@@ -124,6 +124,15 @@ function buildRuntimeError(errorMessage: string): ApiErrorPayload {
       "检查 responsePath 是否指向真实文本字段。",
       "先用 Postman/curl 查看上游返回 JSON，再按实际结构填写 responsePath。"
     ];
+  } else if (detailMessage.includes("upstream non-json response")) {
+    status = 502;
+    code = "UPSTREAM_NON_JSON_RESPONSE";
+    reason = "上游返回的不是 JSON，通常是 HTML 错误页或网关拦截页。";
+    suggestions = [
+      "OpenAI 兼容接口请确认 Base URL 为类似 https://xxx/v1（不要只填域名根路径）。",
+      "检查是否被 WAF/Cloudflare 返回了网页挑战页。",
+      "用 curl 直连同一 URL，确认返回 content-type 为 application/json。"
+    ];
   } else if (upstreamStatus !== undefined) {
     status = 502;
     code = `UPSTREAM_HTTP_${upstreamStatus}`;

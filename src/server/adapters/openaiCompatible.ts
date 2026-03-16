@@ -35,10 +35,22 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       );
     }
 
-    const raw = (await response.json()) as {
+    const rawText = await response.text();
+    let raw: {
       choices?: Array<{ message?: { content?: string } }>;
       usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
     };
+    try {
+      raw = JSON.parse(rawText) as {
+        choices?: Array<{ message?: { content?: string } }>;
+        usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
+      };
+    } catch {
+      const bodySnippet = rawText.replace(/\s+/g, " ").trim().slice(0, 240);
+      throw new Error(
+        `upstream non-json response; endpoint=/chat/completions${bodySnippet ? `; body=${bodySnippet}` : ""}`
+      );
+    }
 
     return {
       content: raw.choices?.[0]?.message?.content ?? "",
